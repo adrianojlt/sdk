@@ -20,7 +20,7 @@ typedef struct dados
 typedef data *apL; /* Declaração do tipo de dados "apL" que é um apontador */
                    /* para uma estrutura do tipo à anteriormente declarada */
 
-data S[T][T];  /* Declaração de uma matriz "T" por "T"                 */
+data S[T][T];  /* declaracao de uma matriz "T" por "T"                 */
 
 
                     /*///////////////////////////////////*/
@@ -517,14 +517,14 @@ void menu()
            switch(opcao)
            {
                 case '1':
-                          insert();
-                          break;
+                          	insert();
+                          	break;
                 case '2':
-			              start();
-                          break;
+				start();
+                          	break;
                  /*case '3':
-                          test();*/
-                          break;
+                          	test();*/
+                          	break;
                 case '0':
                           printf("Quer mesmo sair? ( s / n )\n");
                           opcao=getchar();
@@ -548,7 +548,6 @@ void menu()
 /*==== #menu =================================================================*/
 
 
-                    /*///////////////////////////////////*/
 /*==============================================================================
   MAIN
   ============================================================================*/
