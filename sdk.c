@@ -5,10 +5,10 @@ int count=0; /* Variavel que conta o numero de valores introduzidos na matriz "S
 
             /*#############*/
 /*========================================
- ESTRUTURA de dados que cada nÛ das listas
- ter·. Esta estrutura tem uma vari·vel que
- receber· um numero entre 1 e "T" e contem
- tambÈm um apontador para o nÛ seguinte
+ ESTRUTURA de dados que cada n√≥ das listas
+ ter√°. Esta estrutura tem uma vari√°vel que
+ receber√° um numero entre 1 e "T" e contem
+ tamb√©m um apontador para o n√≥ seguinte
  ========================================*/
 typedef struct dados
 {
@@ -17,36 +17,36 @@ typedef struct dados
 }data;
 /*=======================================*/
 
-typedef data *apL; /* DeclaraÁ„o do tipo de dados "apL" que È um apontador */
-                   /* para uma estrutura do tipo ‡ anteriormente declarada */
+typedef data *apL; /* Declara√ß√£o do tipo de dados "apL" que √© um apontador */
+                   /* para uma estrutura do tipo √© anteriormente declarada */
 
 data S[T][T];  /* declaracao de uma matriz "T" por "T"                 */
 
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- FunÁ„o que INICIALIZA uma lista por cada indice da matriz, essa lista
- ficar· com "T" nÛs em que cada nÛ ter· um numero, entre 1 e "T".
+ Fun√ß√£o que INICIALIZA uma lista por cada indice da matriz, essa lista
+ ficar√° com "T" n√≥s em que cada n√≥ ter√° um numero, entre 1 e "T".
  =============================================================================*/
 void inic()
 {
     apL ap,tmp;
     int l,c,i;
-    for (l=0;l<T;l++)          /* percorre cada linha atÈ ao final            */
-        for (c=0;c<T;c++)      /* todos os Ìndices da matriz s„o percorridos  */
+    for (l=0;l<T;l++)          /* percorre cada linha at√© ao final            */
+        for (c=0;c<T;c++)      /* todos os √≠ndices da matriz s√£o percorridos  */
         {
-            S[l][c].n=0;       /* o valor 0 corresponde a um espaÁo em branco */
-            S[l][c].NoS=(data*)malloc(sizeof(data));/* CriaÁ„o do primeiro nÛ */
+            S[l][c].n=0;       /* o valor 0 corresponde a um espa√ßo em branco */
+            S[l][c].NoS=(data*)malloc(sizeof(data));/* Cria√ß√£o do primeiro n√≥ */
             tmp=S[l][c].NoS;
             for (i=1;i<T;i++)
             {
-                ap=(data*)malloc(sizeof(data)); /* Aqui s„o criados os  nÛs   */
-                (*tmp).NoS=ap;                  /* restantes, em que cada nÛ  */
+                ap=(data*)malloc(sizeof(data)); /* Aqui s√£o criados os  n√≥s   */
+                (*tmp).NoS=ap;                  /* restantes, em que cada n√≥  */
                 (*tmp).n=i;                     /* recebera um numero         */
                 tmp=ap;
             }
             (*tmp).n=T;
-            (*tmp).NoS=NULL;     /* O ultimo nÛ ficar· a apontar para "NULL"  */
+            (*tmp).NoS=NULL;     /* O ultimo n√≥ ficar√° a apontar para "NULL"  */
         }
 }
 /*==== #ini ==================================================================*/
@@ -58,7 +58,7 @@ void inic()
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- FunÁ„o que permite libertar todos os nÛs associados a cada uma das celulas de S
+ Fun√ß√£o que permite libertar todos os n√≥s associados a cada uma das celulas de S
  =============================================================================*/
 void liberta()
 {
@@ -85,7 +85,7 @@ void liberta()
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- FunÁ„o que remove o valor "val" da lista que est· associada · celula [l][c]
+ Fun√ß√£o que remove o valor "val" da lista que est√° associada √† celula [l][c]
  da matriz S.
  =============================================================================*/
 int rem(int l,int c,int val)
@@ -117,7 +117,7 @@ int rem(int l,int c,int val)
     if(tmp2==NULL)
     {
         S[l][c].n=(*tmp).n;
-        count++;             /* o contador È incrementado */
+        count++;             /* o contador √© incrementado */
         S[l][c].NoS=NULL;
         free(tmp);
         tmp=NULL;
@@ -133,7 +133,7 @@ int rem(int l,int c,int val)
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- FunÁ„o que percorre linha "l", coluna "c" e a submatriz associada a [l][c]
+ Fun√ß√£o que percorre linha "l", coluna "c" e a submatriz associada a [l][c]
  =============================================================================*/
 void check (int l,int c,int val)
 {
@@ -141,9 +141,9 @@ void check (int l,int c,int val)
     for (k=0;k<T;k++)/* percorre as colunas */
     {
         x=rem(l,k,val);    /* Ao ser removido "val" e este for o unico elemento */
-        if (x)             /* da lista, esse valor ser· introduzido na celula   */
-        {                   /* correspondente da matriz,  esta funÁ„o È chamada  */
-                           /* novamente, sendo o valor a remover o que a funÁ„o */
+        if (x)             /* da lista, esse valor ser√° introduzido na celula   */
+        {                   /* correspondente da matriz,  esta fun√ß√£o √© chamada  */
+                           /* novamente, sendo o valor a remover o que a fun√ß√£o */
             check(l,k,x);  /* retornar             (A)                          */
         }
     }
@@ -160,7 +160,7 @@ void check (int l,int c,int val)
         l--;
     while (c!=6 && c!=3 && c!=0)
         c--;
-    for (k=l;k<l+3;k++)      /* Nestes dois "for" s„o      */
+    for (k=l;k<l+3;k++)      /* Nestes dois "for" s√£o      */
         for (i=c;i<c+3;i++)  /* percorridas as sub-grelhas */
         {
             x=rem(k,i,val);
@@ -174,8 +174,8 @@ void check (int l,int c,int val)
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- FunÁ„o que percorre os elementos da linha "l", excepto os elementos associados
- ‡ submatriz que tem o elemento de Ìndice [l][j].
+ Fun√ß√£o que percorre os elementos da linha "l", excepto os elementos associados
+ √† submatriz que tem o elemento de √≠ndice [l][j].
  =============================================================================*/
 elemL(int l,int val,int j)
 {
@@ -196,8 +196,8 @@ elemL(int l,int val,int j)
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- FunÁ„o que percorre os elementos da coluna "c", excepto os elementos associados
- ‡ submatriz que tem o elemento de Ìndice [k][c].
+ Fun√ß√£o que percorre os elementos da coluna "c", excepto os elementos associados
+ √† submatriz que tem o elemento de √≠ndice [k][c].
  =============================================================================*/
 elemC(int c,int val,int k)
 {
@@ -220,7 +220,7 @@ elemC(int c,int val,int k)
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- Duas FunÁıes que imprimem os valores da matriz
+ Duas Fun√ß√µes que imprimem os valores da matriz
  =============================================================================*/
 numbers(int l)
 {
@@ -272,8 +272,8 @@ print()
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- Grupo de funÁıes que percorre as sub-grelhas, introduz um valor no elemento
- se este for a ˙nica possibilidade para essa sub-grelha e elemina as
+ Grupo de fun√ß√µes que percorre as sub-grelhas, introduz um valor no elemento
+ se este for a √∫nica possibilidade para essa sub-grelha e elemina as
  possibilidades da linha ou coluna se as possibilidades forem da mesma linha
  ou coluna.
  =============================================================================*/
@@ -367,7 +367,7 @@ solve()
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- FunÁ„o START
+ Fun√ß√£o START
  =============================================================================*/
 start()
 {
@@ -400,7 +400,7 @@ start()
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- FunÁ„o INSERT
+ Fun√ß√£o INSERT
  =============================================================================*/
 void insert()
 {
@@ -492,7 +492,46 @@ test()
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- FunÁ„o Menu
+ Fun√ß√£o que importa um puzzle a partir do ficheiro "sdk.txt"
+ =============================================================================*/
+void import()
+{
+    FILE *f;
+    int l,c,v;
+    char linha[12];
+    liberta();
+    inic();
+    count=0;
+    f=fopen("sdk.txt","r");
+    if (f==NULL)
+    {
+        printf("Erro ao abrir o ficheiro sdk.txt!\n");
+        return;
+    }
+    for (l=0;l<T;l++)
+    {
+        if (fgets(linha,sizeof(linha),f)==NULL)
+            break;
+        for (c=0;c<T;c++)
+        {
+            v=linha[c]-'0';
+            if (v>=1 && v<=9)
+            {
+                S[l][c].n=v;
+                count++;
+            }
+        }
+    }
+    fclose(f);
+    print();
+    printf("count=%i\n",count);
+}
+/*==== #imp ==================================================================*/
+
+
+                    /*///////////////////////////////////*/
+/*==============================================================================
+ Fun√ß√£o Menu
  =============================================================================*/
 void menu()
 {
@@ -502,14 +541,14 @@ void menu()
            printf("\n");
            printf("\t\tMENU\n");
            printf("\n");
-           printf("\t#######################\n");
-           printf("\t#                     #\n");
-           printf("\t# 1 - Novo Puzzle     #\n");
-           printf("\t# 2 - Resolver Puzzle #\n");
-         /*printf("\t# 3 - [l][c]          #\n");*/
-           printf("\t# 0 - Sair            #\n");
-           printf("\t#                     #\n");
-           printf("\t#######################\n");
+           printf("\t##########################\n");
+           printf("\t#                        #\n");
+           printf("\t# 1 - Novo Puzzle        #\n");
+           printf("\t# 2 - Resolver Puzzle    #\n");
+           printf("\t# 3 - Importar Puzzle    #\n");
+           printf("\t# 0 - Sair               #\n");
+           printf("\t#                        #\n");
+           printf("\t##########################\n");
            printf("\n");
            printf("\t\t\tOpcao:");
            scanf(" %c",&opcao);
@@ -522,12 +561,12 @@ void menu()
                 case '2':
 				start();
                           	break;
-                 /*case '3':
-                          	test();*/
+                case '3':
+                          	import();
                           	break;
                 case '0':
                           printf("Quer mesmo sair? ( s / n )\n");
-                          opcao=getchar();
+                          scanf(" %c",&opcao);
                           fflush(stdin);
                           /*duas opcoes para caso de ser introduzido maiuscula*/
                           if(opcao=='s' || opcao=='S')
