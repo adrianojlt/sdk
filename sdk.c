@@ -499,13 +499,22 @@ void import()
     FILE *f;
     int l,c,v;
     char linha[12];
+    char ficheiro[256];
     liberta();
     inic();
     count=0;
-    f=fopen("sdk.txt","r");
+    printf("Ficheiro (ENTER para sdk.txt): ");
+    while ((v=getchar())!='\n' && v!=EOF); /* limpar buffer */
+    fgets(ficheiro,sizeof(ficheiro),stdin);
+    /* remover newline */
+    for (l=0;ficheiro[l]!='\0';l++)
+        if (ficheiro[l]=='\n') { ficheiro[l]='\0'; break; }
+    if (ficheiro[0]=='\0')
+        sprintf(ficheiro,"sdk.txt");
+    f=fopen(ficheiro,"r");
     if (f==NULL)
     {
-        printf("Erro ao abrir o ficheiro sdk.txt!\n");
+        printf("Erro ao abrir o ficheiro %s!\n",ficheiro);
         return;
     }
     for (l=0;l<T;l++)
