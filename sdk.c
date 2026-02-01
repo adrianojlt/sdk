@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #define T 9  /* Valor que define o Tamanho do puzzle */
 int count=0; /* Variavel que conta o numero de valores introduzidos na matriz "S" */
+int contradiction=0; /* Flag que indica contradição durante propagação */
 
             /*#############*/
 /*========================================
@@ -91,6 +92,7 @@ void liberta()
 int rem(int l,int c,int val)
 {
     apL tmp,tmp2;
+    if (contradiction) return 0;
     tmp=&S[l][c];
     tmp2=(*tmp).NoS;
     /*printf("[%i][%i] - %i\n",l+1,c+1,val);*/
@@ -113,6 +115,7 @@ int rem(int l,int c,int val)
             free(tmp2);
         }
     tmp=S[l][c].NoS;
+    if (tmp==NULL) { contradiction=1; return 0; }
     tmp2=(*tmp).NoS;
     if(tmp2==NULL)
     {
@@ -138,6 +141,7 @@ int rem(int l,int c,int val)
 void check (int l,int c,int val)
 {
     int k,x,i;
+    if (contradiction) return;
     for (k=0;k<T;k++)/* percorre as colunas */
     {
         x=rem(l,k,val);    /* Ao ser removido "val" e este for o unico elemento */
@@ -148,7 +152,7 @@ void check (int l,int c,int val)
         }
     }
 
-
+    if (contradiction) return;
     for (k=0;k<T;k++)/* percorre as linhas  */
     {
         x=rem(k,c,val);
@@ -156,6 +160,7 @@ void check (int l,int c,int val)
             check(k,c,x);
     }
 
+    if (contradiction) return;
     while (l!=6 && l!=3 && l!=0)
         l--;
     while (c!=6 && c!=3 && c!=0)
@@ -279,7 +284,8 @@ print()
  =============================================================================*/
 final(int linha,int num,int coluna,int k,int j)
 {
-    if (linha!=-1 && coluna !=-1 && S[linha][coluna].NoS!=NULL)
+    if (contradiction) return 0;
+    if (linha!=-1 && coluna !=-1 && S[linha][coluna].NoS!=NULL && S[linha][coluna].n==0)
     {
         /*printf("[%i][%i]=%i\n",linha+1,coluna+1,num);*/
         S[linha][coluna].n=num;
@@ -335,16 +341,19 @@ perc_subG(int l,int c)
 {
     apL tmp,ap;
     int k,j,num;
+    int nums[T], nn, idx;
     for (k=l;k<l+3;k++)
         for (j=c;j<c+3;j++)
         {
-            ap=S[k][j].NoS;
+            nn=0;
             tmp=S[k][j].NoS;
-            while (tmp!=NULL)
+            while (tmp!=NULL) { nums[nn++]=(*tmp).n; tmp=(*tmp).NoS; }
+            ap=S[k][j].NoS;
+            for (idx=0;idx<nn;idx++)
             {
-                num=(*tmp).n;
-                perc_subG2(l,c,k,j,ap,num);
-                tmp=(*tmp).NoS;
+                if (contradiction) return 0;
+                if (S[k][j].NoS==NULL) break;
+                perc_subG2(l,c,k,j,ap,nums[idx]);
             }
         }
 }
@@ -367,12 +376,148 @@ solve()
 
                     /*///////////////////////////////////*/
 /*==============================================================================
+ Função que verifica se o estado actual do puzzle e' valido (sem duplicados)
+ =============================================================================*/
+int valido()
+{
+    int l,c,k,i,val,bl,bc;
+    for (l=0;l<T;l++)
+        for (c=0;c<T;c++)
+        {
+            val=S[l][c].n;
+            if (val==0) continue;
+            for (k=c+1;k<T;k++)
+                if (S[l][k].n==val) return 0;
+            for (k=l+1;k<T;k++)
+                if (S[k][c].n==val) return 0;
+            bl=l-l%3; bc=c-c%3;
+            for (k=bl;k<bl+3;k++)
+                for (i=bc;i<bc+3;i++)
+                    if ((k!=l || i!=c) && S[k][i].n==val) return 0;
+        }
+    return 1;
+}
+/*==== #val ==================================================================*/
+
+
+                    /*///////////////////////////////////*/
+/*==============================================================================
+ Função BACKTRACK - tenta resolver o puzzle por tentativa e erro usando a
+ heuristica MRV (Minimum Remaining Values)
+ =============================================================================*/
+int backtrack()
+{
+    int save[T][T];
+    int save_count, i, l, c, best_l, best_c, min_cands, ncands, num_cands;
+    int cands[T];
+    apL tmp;
+
+    if (count>=81) return 1;
+
+    /* Guardar estado */
+    save_count=count;
+    for (l=0;l<T;l++)
+        for (c=0;c<T;c++)
+            save[l][c]=S[l][c].n;
+
+    /* Encontrar celula com menos candidatos (MRV) */
+    min_cands=T+1;
+    best_l=-1;
+    best_c=-1;
+    for (l=0;l<T;l++)
+        for (c=0;c<T;c++)
+            if (S[l][c].n==0)
+            {
+                ncands=0;
+                tmp=S[l][c].NoS;
+                while (tmp!=NULL) { ncands++; tmp=(*tmp).NoS; }
+                if (ncands==0) return 0;
+                if (ncands<min_cands) { min_cands=ncands; best_l=l; best_c=c; }
+            }
+
+    if (best_l==-1) return 0;
+
+    /* Guardar candidatos num array */
+    num_cands=0;
+    tmp=S[best_l][best_c].NoS;
+    while (tmp!=NULL) { cands[num_cands++]=(*tmp).n; tmp=(*tmp).NoS; }
+
+    /* Tentar cada candidato */
+    for (i=0;i<num_cands;i++)
+    {
+        /* Restaurar estado guardado */
+        liberta();
+        inic();
+        count=0;
+        for (l=0;l<T;l++)
+            for (c=0;c<T;c++)
+            {
+                S[l][c].n=save[l][c];
+                if (save[l][c]!=0) count++;
+            }
+
+        /* Colocar o valor tentativo */
+        S[best_l][best_c].n=cands[i];
+        count++;
+        contradiction=0;
+
+        /* Re-propagar restricoes: remover candidatos para celulas ja preenchidas */
+        for (l=0;l<T;l++)
+            for (c=0;c<T;c++)
+                if (save[l][c]!=0 || (l==best_l && c==best_c))
+                {
+                    S[l][c].NoS=NULL;
+                }
+        for (l=0;l<T;l++)
+            for (c=0;c<T;c++)
+                if ((save[l][c]!=0 || (l==best_l && c==best_c)) && !contradiction)
+                {
+                    check(l,c,S[l][c].n);
+                }
+
+        if (contradiction) continue;
+
+        /* Executar iteracoes de solve */
+        { int j=0; while (count<81 && j!=20 && !contradiction) { solve(); j++; } }
+
+        if (contradiction || !valido()) continue;
+        if (count>=81) return 1;
+        if (backtrack()) return 1;
+    }
+
+    /* Todos os candidatos falharam - restaurar estado para o chamador */
+    liberta();
+    inic();
+    count=0;
+    for (l=0;l<T;l++)
+        for (c=0;c<T;c++)
+        {
+            S[l][c].n=save[l][c];
+            if (save[l][c]!=0) count++;
+        }
+    contradiction=0;
+    for (l=0;l<T;l++)
+        for (c=0;c<T;c++)
+            if (S[l][c].n!=0)
+            {
+                S[l][c].NoS=NULL;
+                check(l,c,S[l][c].n);
+            }
+
+    return 0;
+}
+/*==== #bkt ==================================================================*/
+
+
+                    /*///////////////////////////////////*/
+/*==============================================================================
  Função START
  =============================================================================*/
 start()
 {
     int l,c,i=0;
     char ch='p';
+    contradiction=0;
     for (l=0;l<9;l++)
         for (c=0;c<9;c++)
             if (S[l][c].n!=0)
@@ -380,18 +525,24 @@ start()
                 S[l][c].NoS=NULL;
                 check(l,c,S[l][c].n);
             }
-    while (count!=81 && i!=20)
+    while (count<81 && i!=20 && !contradiction)
     {
         solve();
         i++;
         /*ch=getchar();*/
     }
-    print();
-    if (count<81)
-        printf("Impossivel resolver sudoku!!!\n\n");
-    else
+    if (count<81 && !contradiction)
+    {
+        if (backtrack())
+            printf("\7");
+        else
+            printf("Impossivel resolver sudoku!!!\n\n");
+    }
+    else if (count>=81)
         printf("\7");
-    /*printf("i=%i\n",i);*/
+    else
+        printf("Impossivel resolver sudoku!!!\n\n");
+    print();
     printf("count=%i\n",count);
 }
 /*==== #str ==================================================================*/
@@ -449,42 +600,6 @@ void insert()
 
 }
 /*==== #ins ==================================================================*/
-
-
-
-
-/******************************************************************************
- ******************************************************************************
- ******************************************************************************
-ver(int l,int c)
-{
-    apL ap;
-    ap=S[l][c].NoS;
-    if (ap==NULL)
-        printf("Lista vazia!!!\n");
-    else
-    {
-        while (ap!=NULL)
-        {
-            printf("%i - ",(*ap).n);
-            ap=(*ap).NoS;
-        }
-    }
-}
-test()
-{
-    int l,c;
-    printf("l:"); scanf("%i",&l);
-    printf("c:"); scanf("%i",&c);
-    ver(l-1,c-1);
-}
- ******************************************************************************
- ******************************************************************************
- ******************************************************************************/
-
-
-
-
 
 
 
@@ -599,9 +714,33 @@ void menu()
 /*==============================================================================
   MAIN
   ============================================================================*/
-main()
+main(int argc, char *argv[])
 {
+    if (argc>1)
+    {
+        FILE *f;
+        int l,c,v;
+        char linha[12];
+        inic();
+        count=0;
+        f=fopen(argv[1],"r");
+        if (f==NULL) { printf("Erro ao abrir %s\n",argv[1]); return 1; }
+        for (l=0;l<T;l++)
+        {
+            if (fgets(linha,sizeof(linha),f)==NULL) break;
+            for (c=0;c<T;c++)
+            {
+                v=linha[c]-'0';
+                if (v>=1 && v<=9) { S[l][c].n=v; count++; }
+            }
+        }
+        fclose(f);
+        printf("Loaded %d clues\n",count);
+        start();
+        return 0;
+    }
     inic();
     menu();
+    return 0;
 }
 /*==== #main =================================================================*/
