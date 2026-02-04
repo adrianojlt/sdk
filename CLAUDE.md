@@ -32,3 +32,10 @@ The solver uses a 9x9 global matrix `S[T][T]` where each cell is a `data` struct
 - Uses `fflush(stdin)` (non-standard)
 - Global state (`S`, `count`) — no parameterized interfaces
 - Manual memory management with malloc/free for candidate linked lists
+
+## sudoku solver algorithms
+- sdk.c - original code with your implementations
+- sdk_bck.c - Uses simple backtracking
+- sdk_mrv - Backtracking optimized with MRV
+- sdk_dlx - Implementation using Dancing Links (DLX)
+

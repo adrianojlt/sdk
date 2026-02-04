@@ -1,53 +1,53 @@
 #include<stdio.h>
 #include<stdlib.h>
-#define T 9  /* Valor que define o Tamanho do puzzle */
-int count=0; /* Variavel que conta o numero de valores introduzidos na matriz "S" */
-int contradiction=0; /* Flag que indica contradição durante propagação */
+#define T 9  /* Value that defines the puzzle size */
+int count=0; /* Variable that counts the number of values inserted in matrix "S" */
+int contradiction=0; /* Flag indicating contradiction during propagation */
 
             /*#############*/
 /*========================================
- ESTRUTURA de dados que cada nó das listas
- terá. Esta estrutura tem uma variável que
- receberá um numero entre 1 e "T" e contem
- também um apontador para o nó seguinte
+ Data STRUCTURE for each node in the lists.
+ This structure has a variable that will
+ receive a number between 1 and "T" and also
+ contains a pointer to the next node
  ========================================*/
 typedef struct dados
 {
     int n;
-    struct dados *NoS;
+    struct dados *next;
 }data;
 /*=======================================*/
 
-typedef data *apL; /* Declaração do tipo de dados "apL" que é um apontador */
-                   /* para uma estrutura do tipo é anteriormente declarada */
+typedef data *nodePtr; /* Declaration of data type "nodePtr" which is a pointer */
+                       /* to a structure of the type previously declared        */
 
-data S[T][T];  /* declaracao de uma matriz "T" por "T"                 */
+data S[T][T];  /* declaration of a "T" by "T" matrix                 */
 
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- Função que INICIALIZA uma lista por cada indice da matriz, essa lista
- ficará com "T" nós em que cada nó terá um numero, entre 1 e "T".
+ Function that INITIALIZES a list for each index of the matrix. This list
+ will have "T" nodes where each node holds a number between 1 and "T".
  =============================================================================*/
-void inic()
+void init()
 {
-    apL ap,tmp;
+    nodePtr ap,tmp;
     int l,c,i;
-    for (l=0;l<T;l++)          /* percorre cada linha até ao final            */
-        for (c=0;c<T;c++)      /* todos os índices da matriz são percorridos  */
+    for (l=0;l<T;l++)          /* traverses each row until the end             */
+        for (c=0;c<T;c++)      /* all matrix indices are traversed             */
         {
-            S[l][c].n=0;       /* o valor 0 corresponde a um espaço em branco */
-            S[l][c].NoS=(data*)malloc(sizeof(data));/* Criação do primeiro nó */
-            tmp=S[l][c].NoS;
+            S[l][c].n=0;       /* the value 0 represents a blank space         */
+            S[l][c].next=(data*)malloc(sizeof(data));/* Creation of the first node */
+            tmp=S[l][c].next;
             for (i=1;i<T;i++)
             {
-                ap=(data*)malloc(sizeof(data)); /* Aqui são criados os  nós   */
-                (*tmp).NoS=ap;                  /* restantes, em que cada nó  */
-                (*tmp).n=i;                     /* recebera um numero         */
+                ap=(data*)malloc(sizeof(data)); /* Here the remaining nodes   */
+                (*tmp).next=ap;                 /* are created, where each    */
+                (*tmp).n=i;                     /* node receives a number     */
                 tmp=ap;
             }
             (*tmp).n=T;
-            (*tmp).NoS=NULL;     /* O ultimo nó ficará a apontar para "NULL"  */
+            (*tmp).next=NULL;    /* The last node will point to "NULL"          */
         }
 }
 /*==== #ini ==================================================================*/
@@ -56,29 +56,28 @@ void inic()
 
 
 
-
                     /*///////////////////////////////////*/
 /*==============================================================================
- Função que permite libertar todos os nós associados a cada uma das celulas de S
+ Function that frees all nodes associated with each cell of S
  =============================================================================*/
-void liberta()
+void freeAll()
 {
-    apL tmp2,tmp;
+    nodePtr tmp2,tmp;
     int l,c,i;
     for (l=0;l<T;l++)
         for (c=0;c<T;c++)
         {
-            tmp=S[l][c].NoS;
+            tmp=S[l][c].next;
             tmp2=tmp;
             while(tmp!=NULL)
             {
-                tmp=(*tmp2).NoS;
+                tmp=(*tmp2).next;
                 free(tmp2);
                 tmp2=tmp;
             }
             if (tmp2!=NULL)
                 free (tmp2);
-            S[l][c].NoS=NULL;
+            S[l][c].next=NULL;
         }
 }
 /*==== #lib ==================================================================*/
@@ -86,42 +85,42 @@ void liberta()
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- Função que remove o valor "val" da lista que está associada à celula [l][c]
- da matriz S.
+ Function that removes the value "val" from the list associated with cell [l][c]
+ of matrix S.
  =============================================================================*/
 int rem(int l,int c,int val)
 {
-    apL tmp,tmp2;
+    nodePtr tmp,tmp2;
     if (contradiction) return 0;
     tmp=&S[l][c];
-    tmp2=(*tmp).NoS;
+    tmp2=(*tmp).next;
     /*printf("[%i][%i] - %i\n",l+1,c+1,val);*/
     if (tmp2==NULL)
         return 0;
-    while ((*tmp2).NoS!=NULL && (*tmp2).n!=val)
+    while ((*tmp2).next!=NULL && (*tmp2).n!=val)
     {
-        tmp=(*tmp).NoS;
-        tmp2=(*tmp2).NoS;
+        tmp=(*tmp).next;
+        tmp2=(*tmp2).next;
     }
     if (tmp2==NULL)
     {
-        (*tmp).NoS=(*tmp2).NoS;
+        (*tmp).next=(*tmp2).next;
         free(tmp2);
     }
     else
         if ((*tmp2).n==val)
         {
-            (*tmp).NoS=(*tmp2).NoS;
+            (*tmp).next=(*tmp2).next;
             free(tmp2);
         }
-    tmp=S[l][c].NoS;
+    tmp=S[l][c].next;
     if (tmp==NULL) { contradiction=1; return 0; }
-    tmp2=(*tmp).NoS;
+    tmp2=(*tmp).next;
     if(tmp2==NULL)
     {
         S[l][c].n=(*tmp).n;
-        count++;             /* o contador é incrementado */
-        S[l][c].NoS=NULL;
+        count++;             /* the counter is incremented */
+        S[l][c].next=NULL;
         free(tmp);
         tmp=NULL;
         return S[l][c].n;
@@ -136,24 +135,24 @@ int rem(int l,int c,int val)
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- Função que percorre linha "l", coluna "c" e a submatriz associada a [l][c]
+ Function that traverses row "l", column "c" and the subgrid associated with [l][c]
  =============================================================================*/
 void check (int l,int c,int val)
 {
     int k,x,i;
     if (contradiction) return;
-    for (k=0;k<T;k++)/* percorre as colunas */
+    for (k=0;k<T;k++)/* traverses the columns */
     {
-        x=rem(l,k,val);    /* Ao ser removido "val" e este for o unico elemento */
-        if (x)             /* da lista, esse valor será introduzido na celula   */
-        {                   /* correspondente da matriz,  esta função é chamada  */
-                           /* novamente, sendo o valor a remover o que a função */
-            check(l,k,x);  /* retornar             (A)                          */
+        x=rem(l,k,val);    /* When "val" is removed and it is the only element  */
+        if (x)             /* in the list, that value is placed in the          */
+        {                   /* corresponding cell of the matrix, this function   */
+                           /* is called again, with the value to remove being   */
+            check(l,k,x);  /* what the function returns  (A)                    */
         }
     }
 
     if (contradiction) return;
-    for (k=0;k<T;k++)/* percorre as linhas  */
+    for (k=0;k<T;k++)/* traverses the rows   */
     {
         x=rem(k,c,val);
         if (x)             /*       (A)     */
@@ -165,8 +164,8 @@ void check (int l,int c,int val)
         l--;
     while (c!=6 && c!=3 && c!=0)
         c--;
-    for (k=l;k<l+3;k++)      /* Nestes dois "for" são      */
-        for (i=c;i<c+3;i++)  /* percorridas as sub-grelhas */
+    for (k=l;k<l+3;k++)      /* In these two "for" loops   */
+        for (i=c;i<c+3;i++)  /* the subgrids are traversed */
         {
             x=rem(k,i,val);
             if (x)          /*       (A)     */
@@ -179,16 +178,16 @@ void check (int l,int c,int val)
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- Função que percorre os elementos da linha "l", excepto os elementos associados
- à submatriz que tem o elemento de índice [l][j].
+ Function that traverses the elements of row "l", except the elements associated
+ with the subgrid containing the element at index [l][j].
  =============================================================================*/
-elemL(int l,int val,int j)
+elemRow(int l,int val,int j)
 {
     int x,i,tmp;
     tmp=j;
     while (j!=6 && j!=3 && j!=0)
         j--;
-    for (i=0;i<T;i++)/* percorre as colunas */
+    for (i=0;i<T;i++)/* traverses the columns */
         if (i!=j && i!=j+1 && i!=j+2 && S[i][tmp].n==0)
         {
             x=rem(l,i,val);
@@ -201,16 +200,16 @@ elemL(int l,int val,int j)
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- Função que percorre os elementos da coluna "c", excepto os elementos associados
- à submatriz que tem o elemento de índice [k][c].
+ Function that traverses the elements of column "c", except the elements associated
+ with the subgrid containing the element at index [k][c].
  =============================================================================*/
-elemC(int c,int val,int k)
+elemCol(int c,int val,int k)
 {
     int i,x,tmp;
     tmp=k;
     while (k!=6 && k!=3 && k!=0)
         k--;
-    for (i=0;i<T;i++)/* percorre as linhas  */
+    for (i=0;i<T;i++)/* traverses the rows   */
         if (i!=k && i!=k+1 && i!=k+2 && S[tmp][i].n==0)
         {
             x=rem(i,c,val);
@@ -225,7 +224,7 @@ elemC(int c,int val,int k)
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- Duas Funções que imprimem os valores da matriz
+ Two functions that print the matrix values
  =============================================================================*/
 numbers(int l)
 {
@@ -277,83 +276,83 @@ print()
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- Grupo de funções que percorre as sub-grelhas, introduz um valor no elemento
- se este for a única possibilidade para essa sub-grelha e elemina as
- possibilidades da linha ou coluna se as possibilidades forem da mesma linha
- ou coluna.
+ Group of functions that traverse the subgrids, places a value in a cell
+ if it is the only possibility for that subgrid, and eliminates
+ possibilities from the row or column if they are in the same row
+ or column.
  =============================================================================*/
-final(int linha,int num,int coluna,int k,int j)
+final(int row,int num,int col,int k,int j)
 {
     if (contradiction) return 0;
-    if (linha!=-1 && coluna !=-1 && S[linha][coluna].NoS!=NULL && S[linha][coluna].n==0)
+    if (row!=-1 && col !=-1 && S[row][col].next!=NULL && S[row][col].n==0)
     {
-        /*printf("[%i][%i]=%i\n",linha+1,coluna+1,num);*/
-        S[linha][coluna].n=num;
+        /*printf("[%i][%i]=%i\n",row+1,col+1,num);*/
+        S[row][col].n=num;
         count++;
-        S[linha][coluna].NoS=NULL;
-        check(linha,coluna,num);
+        S[row][col].next=NULL;
+        check(row,col,num);
 
     }
     else
     {
-        if (linha!=-1 && coluna==-1)
+        if (row!=-1 && col==-1)
         {
-            /*printf("l=%i;val=%i\n",linha+1,num);*/
-            elemL(linha,num,j);
+            /*printf("l=%i;val=%i\n",row+1,num);*/
+            elemRow(row,num,j);
         }
-        if (coluna!=-1 && linha==-1)
+        if (col!=-1 && row==-1)
         {
-            /*printf("c=%i;val=%i\n",coluna+1,num);*/
-            elemC(coluna,num,k);
+            /*printf("c=%i;val=%i\n",col+1,num);*/
+            elemCol(col,num,k);
         }
     }
 }
 
-perc_subG2(int l,int c,int k,int j,apL ap,int num)
+scanSubgrid2(int l,int c,int k,int j,nodePtr ap,int num)
 {
-    apL ap2,tmp2;
-    int n,m,i,linha,coluna;
-    linha=k;
-    coluna=j;
+    nodePtr ap2,tmp2;
+    int n,m,i,row,col;
+    row=k;
+    col=j;
     for (n=l;n<l+3;n++)
         for (m=c;m<c+3;m++)
         {
-            ap2=S[n][m].NoS;
-            tmp2=S[n][m].NoS;
+            ap2=S[n][m].next;
+            tmp2=S[n][m].next;
             while (ap!=ap2 && tmp2!=NULL && (*tmp2).n<=num)
             {
                 if((*tmp2).n==num)
                 {
-                    if (linha!=n)
-                        linha=-1;
-                    if (coluna!=m)
-                        coluna=-1;
+                    if (row!=n)
+                        row=-1;
+                    if (col!=m)
+                        col=-1;
                 }
-                tmp2=(*tmp2).NoS;
+                tmp2=(*tmp2).next;
             }
         }
-    final(linha,num,coluna,k,j);
-        /*checkL(linha);*/
+    final(row,num,col,k,j);
+        /*checkL(row);*/
 }
 
 
-perc_subG(int l,int c)
+scanSubgrid(int l,int c)
 {
-    apL tmp,ap;
+    nodePtr tmp,ap;
     int k,j,num;
     int nums[T], nn, idx;
     for (k=l;k<l+3;k++)
         for (j=c;j<c+3;j++)
         {
             nn=0;
-            tmp=S[k][j].NoS;
-            while (tmp!=NULL) { nums[nn++]=(*tmp).n; tmp=(*tmp).NoS; }
-            ap=S[k][j].NoS;
+            tmp=S[k][j].next;
+            while (tmp!=NULL) { nums[nn++]=(*tmp).n; tmp=(*tmp).next; }
+            ap=S[k][j].next;
             for (idx=0;idx<nn;idx++)
             {
                 if (contradiction) return 0;
-                if (S[k][j].NoS==NULL) break;
-                perc_subG2(l,c,k,j,ap,nums[idx]);
+                if (S[k][j].next==NULL) break;
+                scanSubgrid2(l,c,k,j,ap,nums[idx]);
             }
         }
 }
@@ -367,7 +366,7 @@ solve()
         for (l=0;l<T;l=l+3)
             for (c=0;c<T;c=c+3)
             {
-                perc_subG(l,c);
+                scanSubgrid(l,c);
                 /*print();*/
                 /*getchar();*/
             }
@@ -376,9 +375,9 @@ solve()
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- Função que verifica se o estado actual do puzzle e' valido (sem duplicados)
+ Function that checks if the current puzzle state is valid (no duplicates)
  =============================================================================*/
-int valido()
+int isValid()
 {
     int l,c,k,i,val,bl,bc;
     for (l=0;l<T;l++)
@@ -402,25 +401,25 @@ int valido()
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- Função BACKTRACK - tenta resolver o puzzle por tentativa e erro usando a
- heuristica MRV (Minimum Remaining Values)
+ BACKTRACK function - tries to solve the puzzle by trial and error using the
+ MRV (Minimum Remaining Values) heuristic
  =============================================================================*/
 int backtrack()
 {
     int save[T][T];
     int save_count, i, l, c, best_l, best_c, min_cands, ncands, num_cands;
     int cands[T];
-    apL tmp;
+    nodePtr tmp;
 
     if (count>=81) return 1;
 
-    /* Guardar estado */
+    /* Save state */
     save_count=count;
     for (l=0;l<T;l++)
         for (c=0;c<T;c++)
             save[l][c]=S[l][c].n;
 
-    /* Encontrar celula com menos candidatos (MRV) */
+    /* Find cell with fewest candidates (MRV) */
     min_cands=T+1;
     best_l=-1;
     best_c=-1;
@@ -429,25 +428,25 @@ int backtrack()
             if (S[l][c].n==0)
             {
                 ncands=0;
-                tmp=S[l][c].NoS;
-                while (tmp!=NULL) { ncands++; tmp=(*tmp).NoS; }
+                tmp=S[l][c].next;
+                while (tmp!=NULL) { ncands++; tmp=(*tmp).next; }
                 if (ncands==0) return 0;
                 if (ncands<min_cands) { min_cands=ncands; best_l=l; best_c=c; }
             }
 
     if (best_l==-1) return 0;
 
-    /* Guardar candidatos num array */
+    /* Save candidates in an array */
     num_cands=0;
-    tmp=S[best_l][best_c].NoS;
-    while (tmp!=NULL) { cands[num_cands++]=(*tmp).n; tmp=(*tmp).NoS; }
+    tmp=S[best_l][best_c].next;
+    while (tmp!=NULL) { cands[num_cands++]=(*tmp).n; tmp=(*tmp).next; }
 
-    /* Tentar cada candidato */
+    /* Try each candidate */
     for (i=0;i<num_cands;i++)
     {
-        /* Restaurar estado guardado */
-        liberta();
-        inic();
+        /* Restore saved state */
+        freeAll();
+        init();
         count=0;
         for (l=0;l<T;l++)
             for (c=0;c<T;c++)
@@ -456,17 +455,17 @@ int backtrack()
                 if (save[l][c]!=0) count++;
             }
 
-        /* Colocar o valor tentativo */
+        /* Place the tentative value */
         S[best_l][best_c].n=cands[i];
         count++;
         contradiction=0;
 
-        /* Re-propagar restricoes: remover candidatos para celulas ja preenchidas */
+        /* Re-propagate constraints: remove candidates for already filled cells */
         for (l=0;l<T;l++)
             for (c=0;c<T;c++)
                 if (save[l][c]!=0 || (l==best_l && c==best_c))
                 {
-                    S[l][c].NoS=NULL;
+                    S[l][c].next=NULL;
                 }
         for (l=0;l<T;l++)
             for (c=0;c<T;c++)
@@ -477,17 +476,17 @@ int backtrack()
 
         if (contradiction) continue;
 
-        /* Executar iteracoes de solve */
+        /* Run solve iterations */
         { int j=0; while (count<81 && j!=20 && !contradiction) { solve(); j++; } }
 
-        if (contradiction || !valido()) continue;
+        if (contradiction || !isValid()) continue;
         if (count>=81) return 1;
         if (backtrack()) return 1;
     }
 
-    /* Todos os candidatos falharam - restaurar estado para o chamador */
-    liberta();
-    inic();
+    /* All candidates failed - restore state for the caller */
+    freeAll();
+    init();
     count=0;
     for (l=0;l<T;l++)
         for (c=0;c<T;c++)
@@ -500,7 +499,7 @@ int backtrack()
         for (c=0;c<T;c++)
             if (S[l][c].n!=0)
             {
-                S[l][c].NoS=NULL;
+                S[l][c].next=NULL;
                 check(l,c,S[l][c].n);
             }
 
@@ -511,7 +510,7 @@ int backtrack()
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- Função START
+ START function
  =============================================================================*/
 start()
 {
@@ -522,7 +521,7 @@ start()
         for (c=0;c<9;c++)
             if (S[l][c].n!=0)
             {
-                S[l][c].NoS=NULL;
+                S[l][c].next=NULL;
                 check(l,c,S[l][c].n);
             }
     while (count<81 && i!=20 && !contradiction)
@@ -536,12 +535,12 @@ start()
         if (backtrack())
             printf("\7");
         else
-            printf("Impossivel resolver sudoku!!!\n\n");
+            printf("Unable to solve sudoku!!!\n\n");
     }
     else if (count>=81)
         printf("\7");
     else
-        printf("Impossivel resolver sudoku!!!\n\n");
+        printf("Unable to solve sudoku!!!\n\n");
     print();
     printf("count=%i\n",count);
 }
@@ -551,22 +550,22 @@ start()
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- Função INSERT
+ INSERT function
  =============================================================================*/
 void insert()
 {
     int l,c,v=1;
-    liberta();
-    inic();
+    freeAll();
+    init();
     count=0;
-    printf("introduza a Linha Coluna e repectivo Valor.\n");
-    printf("Para terminar a insercao insira ZERO para a Linha,\npara a Coluna e para o Valor.\n");
-    printf("Para preencher uma celula a branco insira ZERO para o Valor.\n");
+    printf("Enter the Row, Column and respective Value.\n");
+    printf("To finish insertion enter ZERO for the Row,\nthe Column and the Value.\n");
+    printf("To clear a cell enter ZERO for the Value.\n");
     while (l && c)
     {
-        printf("\nLinha : "); scanf(" %d",&l);
-        printf("Coluna: "); scanf(" %d",&c);
-        printf("Valor : "); scanf(" %d",&v);
+        printf("\nRow   : "); scanf(" %d",&l);
+        printf("Column: "); scanf(" %d",&c);
+        printf("Value : "); scanf(" %d",&v);
         if ((l>=0 && l<10) && (c>=0 && c<10))
         {
             if (l && c && v)
@@ -584,7 +583,7 @@ void insert()
                 }
         }
         else
-            printf("Os valores estao fora do intervalo!!!:\n");
+            printf("Values are out of range!!!\n");
         print();
         printf("count=%i\n",count);
         /*printf("\nl=%d ; c=%d ; v=%d\n",l,c,v);*/
@@ -604,41 +603,40 @@ void insert()
 
 
 
-
                     /*///////////////////////////////////*/
 /*==============================================================================
- Função que importa um puzzle a partir do ficheiro "sdk.txt"
+ Function that imports a puzzle from the file "sdk.txt"
  =============================================================================*/
 void import()
 {
     FILE *f;
     int l,c,v;
-    char linha[12];
-    char ficheiro[256];
-    liberta();
-    inic();
+    char line[12];
+    char filename[256];
+    freeAll();
+    init();
     count=0;
-    printf("Ficheiro (ENTER para sdk.txt): ");
-    while ((v=getchar())!='\n' && v!=EOF); /* limpar buffer */
-    fgets(ficheiro,sizeof(ficheiro),stdin);
-    /* remover newline */
-    for (l=0;ficheiro[l]!='\0';l++)
-        if (ficheiro[l]=='\n') { ficheiro[l]='\0'; break; }
-    if (ficheiro[0]=='\0')
-        sprintf(ficheiro,"sdk.txt");
-    f=fopen(ficheiro,"r");
+    printf("File (ENTER for sdk.txt): ");
+    while ((v=getchar())!='\n' && v!=EOF); /* clear buffer */
+    fgets(filename,sizeof(filename),stdin);
+    /* remove newline */
+    for (l=0;filename[l]!='\0';l++)
+        if (filename[l]=='\n') { filename[l]='\0'; break; }
+    if (filename[0]=='\0')
+        sprintf(filename,"sdk.txt");
+    f=fopen(filename,"r");
     if (f==NULL)
     {
-        printf("Erro ao abrir o ficheiro %s!\n",ficheiro);
+        printf("Error opening file %s!\n",filename);
         return;
     }
     for (l=0;l<T;l++)
     {
-        if (fgets(linha,sizeof(linha),f)==NULL)
+        if (fgets(line,sizeof(line),f)==NULL)
             break;
         for (c=0;c<T;c++)
         {
-            v=linha[c]-'0';
+            v=line[c]-'0';
             if (v>=1 && v<=9)
             {
                 S[l][c].n=v;
@@ -655,11 +653,11 @@ void import()
 
                     /*///////////////////////////////////*/
 /*==============================================================================
- Função Menu
+ Menu function
  =============================================================================*/
 void menu()
 {
-       char opcao;
+       char option;
        do
        {
            printf("\n");
@@ -667,17 +665,17 @@ void menu()
            printf("\n");
            printf("\t##########################\n");
            printf("\t#                        #\n");
-           printf("\t# 1 - Novo Puzzle        #\n");
-           printf("\t# 2 - Resolver Puzzle    #\n");
-           printf("\t# 3 - Importar Puzzle    #\n");
-           printf("\t# 0 - Sair               #\n");
+           printf("\t# 1 - New Puzzle         #\n");
+           printf("\t# 2 - Solve Puzzle       #\n");
+           printf("\t# 3 - Import Puzzle      #\n");
+           printf("\t# 0 - Exit               #\n");
            printf("\t#                        #\n");
            printf("\t##########################\n");
            printf("\n");
-           printf("\t\t\tOpcao:");
-           scanf(" %c",&opcao);
-           fflush(stdin);/* Limpar o buffer do teclado*/
-           switch(opcao)
+           printf("\t\t\tOption:");
+           scanf(" %c",&option);
+           fflush(stdin);/* Clear the keyboard buffer */
+           switch(option)
            {
                 case '1':
                           	insert();
@@ -689,24 +687,24 @@ void menu()
                           	import();
                           	break;
                 case '0':
-                          printf("Quer mesmo sair? ( s / n )\n");
-                          scanf(" %c",&opcao);
+                          printf("Do you really want to exit? ( y / n )\n");
+                          scanf(" %c",&option);
                           fflush(stdin);
-                          /*duas opcoes para caso de ser introduzido maiuscula*/
-                          if(opcao=='s' || opcao=='S')
+                          /* two options in case uppercase is entered */
+                          if(option=='y' || option=='Y')
                           {
-                                    opcao='0';
-                                    liberta();
+                                    option='0';
+                                    freeAll();
                           }
                           break;
-                
+
                 default:
-                         printf("Opcao Incorrecta!\n");
-                         break;                   
-    
+                         printf("Invalid option!\n");
+                         break;
+
            }
-       }  
-    while(opcao!='0');
+       }
+    while(option!='0');
 }
 /*==== #menu =================================================================*/
 
@@ -720,17 +718,17 @@ main(int argc, char *argv[])
     {
         FILE *f;
         int l,c,v;
-        char linha[12];
-        inic();
+        char line[12];
+        init();
         count=0;
         f=fopen(argv[1],"r");
-        if (f==NULL) { printf("Erro ao abrir %s\n",argv[1]); return 1; }
+        if (f==NULL) { printf("Error opening %s\n",argv[1]); return 1; }
         for (l=0;l<T;l++)
         {
-            if (fgets(linha,sizeof(linha),f)==NULL) break;
+            if (fgets(line,sizeof(line),f)==NULL) break;
             for (c=0;c<T;c++)
             {
-                v=linha[c]-'0';
+                v=line[c]-'0';
                 if (v>=1 && v<=9) { S[l][c].n=v; count++; }
             }
         }
@@ -739,7 +737,7 @@ main(int argc, char *argv[])
         start();
         return 0;
     }
-    inic();
+    init();
     menu();
     return 0;
 }

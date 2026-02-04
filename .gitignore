@@ -1,3 +1,5 @@
 sdk
 *.o
+*.class
 sdk.txt
+output
