@@ -61,7 +61,7 @@ A text file with 9 lines of 9 digits each. `0` represents an empty cell:
 005010300
 ```
 
-Sample puzzles are included in the repo: `sdk.txt`, `sdk01.txt`, and `hard.txt`.
+ Puzzles examples are included in the folder `puzzles`.
 
 ## Background
 
